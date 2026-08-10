@@ -83,6 +83,15 @@ public class CliRunnerTests
     }
 
     [Fact]
+    public void Output_ShowsSelectedMask()
+    {
+        var (code, stdout, _) = Run("HELLO CC WORLD", "--ec", "M");
+        Assert.Equal(0, code);
+        Assert.Contains("Mask:", stdout);
+        Assert.Contains("penalty", stdout);
+    }
+
+    [Fact]
     public void NonEncodableInput_ReturnsError()
     {
         var (code, _, err) = Run("\uD83D\uDE00"); // emoji

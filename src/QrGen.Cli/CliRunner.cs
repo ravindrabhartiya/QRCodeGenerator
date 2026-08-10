@@ -72,6 +72,7 @@ public static class CliRunner
             var (blocks, ecPerBlock, dataPerBlock) = Version4.BlockLayout(ec);
             byte[] finalCodewords = BlockInterleaver.Interleave(codewords, ec);
             QrMatrix matrix = MatrixBuilder.Build(finalCodewords);
+            var (maskPattern, maskedMatrix, penalty) = Masking.SelectBestMask(matrix);
 
             stdout.WriteLine($"Input:      {text}");
             stdout.WriteLine($"Mode:       {mode}");
@@ -87,8 +88,9 @@ public static class CliRunner
             stdout.WriteLine(
                 $"Matrix:     {matrix.Size}×{matrix.Size} " +
                 $"({matrix.CountFunction()} function, {matrix.CountData()} data modules)");
-            stdout.WriteLine("Preview (unmasked, format info pending):");
-            WriteMatrix(stdout, matrix);
+            stdout.WriteLine($"Mask:       {maskPattern} (penalty {penalty})");
+            stdout.WriteLine("Preview (masked, format info pending):");
+            WriteMatrix(stdout, maskedMatrix);
             return 0;
         }
         catch (ArgumentException ex)

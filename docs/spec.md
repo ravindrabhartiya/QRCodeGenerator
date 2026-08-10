@@ -141,13 +141,13 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done
 | 4.6   | Dark module                                                        | ✅ | `MatrixBuilderTests` (1) | (25,8)=(size-8,8) |
 | 4.7   | Reserve format (version info N/A for v4)                           | ✅ | `MatrixBuilderTests` (1) | strips reserved, timing preserved |
 | 4.8   | Zig-zag data placement skipping function modules                   | ✅ | `MatrixBuilderTests` (3) | 807 data modules; MSB-first; bottom-right start |
-| 5     | Apply 8 mask patterns (data modules only)                          | ⬜ | — | — |
-| 5     | 4 penalty rules + lowest-score selection                          | ⬜ | — | — |
+| 5     | Apply 8 mask patterns (data modules only)                          | ✅ | `MaskingTests` (4) | `MaskCondition`+`Apply`; involution; function modules untouched |
+| 5     | 4 penalty rules + lowest-score selection                          | ✅ | `MaskingTests` (7) | rules 1–4 hand-verified; `SelectBestMask` picks min |
 | 6     | 15-bit BCH format info + placement (2 copies)                      | ⬜ | — | — |
 | 7     | Add 4-module quiet zone                                            | ⬜ | — | — |
 | 7     | Render PNG (configurable module size)                              | ⬜ | — | — |
 | 7     | ASCII/console preview                                              | ⬜ | — | — |
-| 8     | CLI arg parsing + output                                           | 🟡 | `CliRunnerTests` (9) | testable `CliRunner.Run`; now shows matrix counts + unmasked ASCII preview |
+| 8     | CLI arg parsing + output                                           | 🟡 | `CliRunnerTests` (10) | testable `CliRunner.Run`; now shows selected mask + masked ASCII preview |
 | 8     | E2E round-trip decode (every mode × every EC level)                | ⬜ | — | — |
 | 8     | 3-model self code review; user triage                             | ⬜ | — | — |
 
