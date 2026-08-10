@@ -1,0 +1,18 @@
+# Build output
+bin/
+obj/
+
+# Rider / VS
+.vs/
+.idea/
+*.user
+
+# Test results / coverage
+TestResults/
+*.trx
+coverage*.json
+coverage*.xml
+
+# Generated QR output samples
+*.png
+!docs/**/*.png
