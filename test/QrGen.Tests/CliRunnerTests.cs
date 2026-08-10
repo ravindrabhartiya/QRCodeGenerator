@@ -101,6 +101,35 @@ public class CliRunnerTests
     }
 
     [Fact]
+    public void OutOption_WritesPngFile()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"qrgen_cli_{System.Guid.NewGuid():N}.png");
+        try
+        {
+            var (code, stdout, _) = Run("HELLO CC WORLD", "--out", path, "--scale", "3");
+            Assert.Equal(0, code);
+            Assert.True(File.Exists(path));
+            Assert.Contains("Saved:", stdout);
+            Assert.Contains("scale 3", stdout);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
+    public void InvalidScale_ReturnsError()
+    {
+        var (code, _, err) = Run("12345", "--scale", "0");
+        Assert.NotEqual(0, code);
+        Assert.Contains("invalid scale", err);
+    }
+
+    [Fact]
     public void NonEncodableInput_ReturnsError()
     {
         var (code, _, err) = Run("\uD83D\uDE00"); // emoji

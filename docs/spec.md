@@ -144,11 +144,11 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done
 | 5     | Apply 8 mask patterns (data modules only)                          | ✅ | `MaskingTests` (4) | `MaskCondition`+`Apply`; involution; function modules untouched |
 | 5     | 4 penalty rules + lowest-score selection                          | ✅ | `MaskingTests` (7) | rules 1–4 hand-verified; `SelectBestMask` picks min |
 | 6     | 15-bit BCH format info + placement (2 copies)                      | ✅ | `FormatInfoTests` (9) + `CliRunnerTests` (1) | BCH(15,5) gen 0x537, XOR 0x5412; MSB-first; both copies + dark module; validated 0-diff vs segno |
-| 7     | Add 4-module quiet zone                                            | ⬜ | — | — |
-| 7     | Render PNG (configurable module size)                              | ⬜ | — | — |
-| 7     | ASCII/console preview                                              | ⬜ | — | — |
-| 8     | CLI arg parsing + output                                           | 🟡 | `CliRunnerTests` (11) | testable `CliRunner.Run`; shows selected mask + format info + masked/format ASCII preview |
-| 8     | E2E round-trip decode (every mode × every EC level)                | ⬜ | — | — |
+| 7     | Add 4-module quiet zone                                            | ✅ | `RendererTests` (6) | `Renderer.ToGrid`; light border on all sides; offset preserves modules |
+| 7     | Render PNG (configurable module size)                              | ✅ | `RendererTests` (5) | `ToPng`/`SavePng` via ImageSharp; 1→black/0→white; module-size scaling |
+| 7     | ASCII/console preview                                              | ✅ | `RendererTests` (1) | `ToAscii` with quiet zone; CLI preview delegates to it |
+| 8     | CLI arg parsing + output                                           | 🟡 | `CliRunnerTests` (13) | testable `CliRunner.Run`; mask + format info; `--out` PNG + `--scale`; quiet-zone ASCII preview |
+| 8     | E2E round-trip decode (every mode × every EC level)                | 🟡 | manual (pyzbar) | alphanumeric + byte PNGs decode correctly; automated ZXing.Net suite pending |
 | 8     | 3-model self code review; user triage                             | ⬜ | — | — |
 
 ---
@@ -169,6 +169,8 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done
   implementation is correct; segno is NOT a valid oracle for the exactly-aligned byte case.** This
   affects only byte mode with certain lengths (e.g. "Hello!"). Full-matrix validation for byte mode
   is therefore done against `qrcode`/ISO, not segno. Round-trip decode in Step 8 is the final check.
+  **Confirmed:** the byte-mode PNG ("Hello!") and alphanumeric PNG ("HELLO CC WORLD") both decode
+  correctly via pyzbar (ZBar), proving our ISO-correct output is scannable.
 
 ---
 

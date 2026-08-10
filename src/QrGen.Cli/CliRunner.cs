@@ -17,6 +17,8 @@ public static class CliRunner
         string? text = null;
         var ec = EcLevel.M;
         bool dump01 = false;
+        string? outPath = null;
+        int scale = Renderer.DefaultModuleSize;
 
         for (int i = 0; i < (args?.Length ?? 0); i++)
         {
@@ -30,6 +32,28 @@ public static class CliRunner
 
                 case "--dump01":
                     dump01 = true;
+                    break;
+
+                case "--out":
+                    if (i + 1 >= args.Length)
+                    {
+                        stderr.WriteLine("error: --out requires a file path.");
+                        return 2;
+                    }
+                    outPath = args[++i];
+                    break;
+
+                case "--scale":
+                    if (i + 1 >= args.Length)
+                    {
+                        stderr.WriteLine("error: --scale requires a positive integer.");
+                        return 2;
+                    }
+                    if (!int.TryParse(args[++i], out scale) || scale < 1)
+                    {
+                        stderr.WriteLine($"error: invalid scale '{args[i]}' (expected a positive integer).");
+                        return 2;
+                    }
                     break;
 
                 case "--ec":
@@ -102,13 +126,33 @@ public static class CliRunner
                 $"({matrix.CountFunction()} function, {matrix.CountData()} data modules)");
             stdout.WriteLine($"Mask:       {maskPattern} (penalty {penalty})");
             stdout.WriteLine($"Format:     {FormatInfo.Compute(ec, maskPattern):X4} (BCH 15,5)");
-            stdout.WriteLine("Preview (masked + format info):");
-            WriteMatrix(stdout, maskedMatrix);
+
+            if (outPath is not null)
+            {
+                Renderer.SavePng(maskedMatrix, outPath, scale);
+                stdout.WriteLine(
+                    $"Saved:      {outPath} " +
+                    $"({(maskedMatrix.Size + 2 * Renderer.DefaultQuietZone) * scale}px, " +
+                    $"scale {scale}, quiet zone {Renderer.DefaultQuietZone})");
+            }
+
+            stdout.WriteLine("Preview (with quiet zone):");
+            stdout.Write(Renderer.ToAscii(maskedMatrix));
             return 0;
         }
         catch (ArgumentException ex)
         {
             stderr.WriteLine($"error: {ex.Message}");
+            return 1;
+        }
+        catch (IOException ex)
+        {
+            stderr.WriteLine($"error: could not write output file: {ex.Message}");
+            return 1;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            stderr.WriteLine($"error: could not write output file: {ex.Message}");
             return 1;
         }
     }
@@ -128,20 +172,6 @@ public static class CliRunner
     private static string ToHex(byte[] bytes) =>
         string.Join(' ', bytes.Select(b => b.ToString("X2")));
 
-    private static void WriteMatrix(TextWriter w, QrMatrix m)
-    {
-        for (int r = 0; r < m.Size; r++)
-        {
-            var sb = new System.Text.StringBuilder(m.Size * 2);
-            for (int c = 0; c < m.Size; c++)
-            {
-                sb.Append(m.IsDark(r, c) ? "██" : "  ");
-            }
-
-            w.WriteLine(sb.ToString());
-        }
-    }
-
     private static void WriteMatrix01(TextWriter w, QrMatrix m)
     {
         for (int r = 0; r < m.Size; r++)
@@ -158,9 +188,11 @@ public static class CliRunner
 
     private static void PrintUsage(TextWriter w)
     {
-        w.WriteLine("Usage: qrgen <text> [--ec <L|M|Q|H>]");
+        w.WriteLine("Usage: qrgen <text> [--ec <L|M|Q|H>] [--out <file.png>] [--scale <n>]");
         w.WriteLine("  Generates a QR Code (Version 4) for the given text.");
         w.WriteLine("  --ec         Error-correction level (default: M).");
+        w.WriteLine("  --out        Write a PNG image to the given path.");
+        w.WriteLine("  --scale      Pixels per module for --out (default: 8).");
         w.WriteLine("  -h, --help   Show this help.");
     }
 }
