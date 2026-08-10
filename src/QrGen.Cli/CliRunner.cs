@@ -16,6 +16,7 @@ public static class CliRunner
     {
         string? text = null;
         var ec = EcLevel.M;
+        bool dump01 = false;
 
         for (int i = 0; i < (args?.Length ?? 0); i++)
         {
@@ -26,6 +27,10 @@ public static class CliRunner
                 case "--help":
                     PrintUsage(stdout);
                     return 0;
+
+                case "--dump01":
+                    dump01 = true;
+                    break;
 
                 case "--ec":
                     if (i + 1 >= args.Length)
@@ -73,6 +78,13 @@ public static class CliRunner
             byte[] finalCodewords = BlockInterleaver.Interleave(codewords, ec);
             QrMatrix matrix = MatrixBuilder.Build(finalCodewords);
             var (maskPattern, maskedMatrix, penalty) = Masking.SelectBestMask(matrix);
+            FormatInfo.Place(maskedMatrix, ec, maskPattern);
+
+            if (dump01)
+            {
+                WriteMatrix01(stdout, maskedMatrix);
+                return 0;
+            }
 
             stdout.WriteLine($"Input:      {text}");
             stdout.WriteLine($"Mode:       {mode}");
@@ -89,7 +101,8 @@ public static class CliRunner
                 $"Matrix:     {matrix.Size}×{matrix.Size} " +
                 $"({matrix.CountFunction()} function, {matrix.CountData()} data modules)");
             stdout.WriteLine($"Mask:       {maskPattern} (penalty {penalty})");
-            stdout.WriteLine("Preview (masked, format info pending):");
+            stdout.WriteLine($"Format:     {FormatInfo.Compute(ec, maskPattern):X4} (BCH 15,5)");
+            stdout.WriteLine("Preview (masked + format info):");
             WriteMatrix(stdout, maskedMatrix);
             return 0;
         }
@@ -123,6 +136,20 @@ public static class CliRunner
             for (int c = 0; c < m.Size; c++)
             {
                 sb.Append(m.IsDark(r, c) ? "██" : "  ");
+            }
+
+            w.WriteLine(sb.ToString());
+        }
+    }
+
+    private static void WriteMatrix01(TextWriter w, QrMatrix m)
+    {
+        for (int r = 0; r < m.Size; r++)
+        {
+            var sb = new System.Text.StringBuilder(m.Size);
+            for (int c = 0; c < m.Size; c++)
+            {
+                sb.Append(m.IsDark(r, c) ? '1' : '0');
             }
 
             w.WriteLine(sb.ToString());

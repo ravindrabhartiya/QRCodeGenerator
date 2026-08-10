@@ -92,6 +92,15 @@ public class CliRunnerTests
     }
 
     [Fact]
+    public void Output_ShowsFormatInformation()
+    {
+        var (code, stdout, _) = Run("HELLO CC WORLD", "--ec", "M");
+        Assert.Equal(0, code);
+        // EC M + mask 6 → BCH(15,5) value 0x4F97.
+        Assert.Contains("Format:     4F97", stdout);
+    }
+
+    [Fact]
     public void NonEncodableInput_ReturnsError()
     {
         var (code, _, err) = Run("\uD83D\uDE00"); // emoji

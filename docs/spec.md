@@ -143,11 +143,11 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done
 | 4.8   | Zig-zag data placement skipping function modules                   | ✅ | `MatrixBuilderTests` (3) | 807 data modules; MSB-first; bottom-right start |
 | 5     | Apply 8 mask patterns (data modules only)                          | ✅ | `MaskingTests` (4) | `MaskCondition`+`Apply`; involution; function modules untouched |
 | 5     | 4 penalty rules + lowest-score selection                          | ✅ | `MaskingTests` (7) | rules 1–4 hand-verified; `SelectBestMask` picks min |
-| 6     | 15-bit BCH format info + placement (2 copies)                      | ⬜ | — | — |
+| 6     | 15-bit BCH format info + placement (2 copies)                      | ✅ | `FormatInfoTests` (9) + `CliRunnerTests` (1) | BCH(15,5) gen 0x537, XOR 0x5412; MSB-first; both copies + dark module; validated 0-diff vs segno |
 | 7     | Add 4-module quiet zone                                            | ⬜ | — | — |
 | 7     | Render PNG (configurable module size)                              | ⬜ | — | — |
 | 7     | ASCII/console preview                                              | ⬜ | — | — |
-| 8     | CLI arg parsing + output                                           | 🟡 | `CliRunnerTests` (10) | testable `CliRunner.Run`; now shows selected mask + masked ASCII preview |
+| 8     | CLI arg parsing + output                                           | 🟡 | `CliRunnerTests` (11) | testable `CliRunner.Run`; shows selected mask + format info + masked/format ASCII preview |
 | 8     | E2E round-trip decode (every mode × every EC level)                | ⬜ | — | — |
 | 8     | 3-model self code review; user triage                             | ⬜ | — | — |
 
@@ -161,6 +161,14 @@ Status legend: ⬜ Not started · 🟡 In progress · ✅ Done
   without one. Pinned to **ImageSharp 2.1.10 (Apache-2.0)** which has no such requirement.
   Backlog: revisit if a newer permissive imaging option is preferred.
 - **[scope] Version-only (v4)**: extending to versions 1–40 with auto-selection is future work.
+- **[ref-lib-bug] segno adds a spurious padding byte when byte-aligned:** segno's
+  `write_padding_bits` computes `8 - (length % 8)`, which yields **8** (a full `0x00` byte) when
+  the post-terminator stream is already byte-aligned, instead of 0. Per ISO/IEC 18004 §7.4.10,
+  padding bits are only added *"if the bit stream does not end at a codeword boundary."* Confirmed
+  ISO-correct behavior (no extra byte) independently via the `qrcode` Python library. **Our
+  implementation is correct; segno is NOT a valid oracle for the exactly-aligned byte case.** This
+  affects only byte mode with certain lengths (e.g. "Hello!"). Full-matrix validation for byte mode
+  is therefore done against `qrcode`/ISO, not segno. Round-trip decode in Step 8 is the final check.
 
 ---
 
